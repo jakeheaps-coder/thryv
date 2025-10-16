@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paid Media Agent</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+    <!-- Main App -->
+    <div id="mainApp" class="main-app show">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <button id="menuToggle" class="menu-toggle">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" />
+                    </svg>
+                </button>
+                <div class="header-text">
+                    <div class="title-dropdown" id="titleDropdown">
+                        <h1 class="title-selector" id="titleSelector" onclick="toggleDropdown()">
+                            <span class="title-text" id="titleText">Paid Media Agent</span>
+                            <svg class="title-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round"></path>
+                            </svg>
+                        </h1>
+                        <div class="title-dropdown-options" id="titleDropdownOptions">
+                            <div class="title-option" data-value="clanker5000"
+                                onclick="selectOption('clanker5000', 'Clanker 5000')">Paid Media Agent</div>
+                            <div class="title-option" data-value="clanker5000Deep"
+                                onclick="selectOption('clanker5000Deep', 'Clanker 5000 Deep Research')">Paid Media Agent
+                                Deep Research</div>
+                        </div>
+                    </div>
+                    <div class="header-subtitle">AI-Powered Insights & Generation</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- App Container -->
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Chat History</h2>
+                    <button id="closeSidebar" class="close-sidebar">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
+                <button id="newChatBtn" class="new-chat-btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    New Chat
+                </button>
+                <div class="chat-history" id="chatHistory">
+                    <!-- Chat history items will be dynamically added here -->
+                </div>
+            </aside>
+
+            <!-- Main Chat Container -->
+            <main class="chat-container">
+                <div class="messages-wrapper">
+                    <!-- Error Message -->
+                    <div id="errorMessage" class="error-message"></div>
+
+                    <!-- Messages Area -->
+                    <div id="messages" class="messages">
+                        <!-- Messages will be dynamically added here -->
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div id="typingIndicator" class="typing-indicator">
+                        <div class="message-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" fill="#1B8CE3" />
+                                <path d="M12 6v6l4 2" stroke="white" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <div class="typing-bubble">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <textarea id="chatInput" class="chat-input" placeholder="Type your message..."
+                            autocomplete="off" maxlength="5000" rows="1"></textarea>
+                        <button id="submitBtn" class="submit-btn" title="Send message">
+                            <span class="btn-text">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M2 10L8 4V7.5H14V12.5H8V16L2 10Z" fill="currentColor"
+                                        transform="rotate(180 10 10)" />
+                                </svg>
+                            </span>
+                            <div class="spinner"></div>
+                        </button>
+                    </div>
+                    <div class="input-hint">Press Enter to send</div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal">
+            <h3 class="modal-title">Delete Chat?</h3>
+            <p class="modal-message">Are you sure you want to delete this chat? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="cancelDelete()">Cancel</button>
+                <button class="modal-btn modal-btn-delete" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

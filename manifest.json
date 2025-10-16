@@ -1,0 +1,65 @@
+{
+    "id": "{{YOUR_APP_ID_HERE}}",
+    "name": "{{YOUR_APP_NAME_HERE}}",
+    "version": "0.0.1",
+    "datasetsMapping": [],
+    "size": {
+        "width": 1,
+        "height": 1
+    },
+    "workflowsMapping": [
+        {
+            "startName": "Start testing",
+            "alias": "paidMediaStartDeep",
+            "modelId": "{{YOUR_DEEP_RESEARCH_WORKFLOW_ID_HERE}}",
+            "parameters": [
+                {
+                    "name": "What_do_you_want_to_know",
+                    "displayName": "What_do_you_want_to_know",
+                    "subString": null,
+                    "type": "text",
+                    "visible": true,
+                    "value": null,
+                    "required": true,
+                    "isList": false,
+                    "children": [],
+                    "nullable": false,
+                    "entitySubType": null,
+                    "aliasedName": "start"
+                }
+            ],
+            "version": "1.0.1"
+        },
+        {
+            "startName": "Paid Media Insight & Generation",
+            "alias": "paidMediaStart",
+            "modelId": "{{YOUR_WORKFLOW_ID_HERE}}",
+            "parameters": [
+                {
+                    "name": "What_do_you_want_to_know",
+                    "displayName": "What_do_you_want_to_know",
+                    "subString": null,
+                    "type": "text",
+                    "visible": true,
+                    "value": null,
+                    "required": true,
+                    "isList": false,
+                    "children": [],
+                    "nullable": false,
+                    "entitySubType": null,
+                    "aliasedName": "start"
+                }
+            ],
+            "version": "1.0.1"
+        }
+    ],
+    "collectionsMapping": [
+        {
+            "id": "{{YOUR_COLLECTION_ID_HERE}}",
+            "name": "Paid Media Insight & Generation",
+            "alias": "paidsearchapp",
+            "syncEnabled": false
+        }
+    ],
+    "fullpage": true
+}
