@@ -1,65 +1,44 @@
 {
-    "id": "{{YOUR_APP_ID_HERE}}",
-    "name": "{{YOUR_APP_NAME_HERE}}",
-    "version": "0.0.1",
-    "datasetsMapping": [],
-    "size": {
-        "width": 1,
-        "height": 1
-    },
-    "workflowsMapping": [
+  "id": "584f8839-cc5f-413f-80c3-8ebef814d290",
+  "name": "DH Test | AI Paid Search Chat",
+  "proxyId": "d6859e6f-9c0b-4cc6-941f-ae7f0fc9aad5",
+  "version": "0.0.1",
+  "datasetsMapping": [],
+  "size": {
+    "width": 1,
+    "height": 1
+  },
+  "fullpage": true,
+  "collectionsMapping": [
+    {
+      "id": "9a9a1746-f4b6-4a17-9bef-62ee7912e8d2",
+      "name": "Paid Landing Page Insight & Generation",
+      "syncEnabled": false
+    }
+  ],
+  "workflowsMapping": [
+    {
+      "startName": "DH Test | Paid Media Insight & Generation",
+      "alias": "paidMediaStart",
+      "modelId": "75a6f84e-3322-4cc4-a48c-a5fe1cef3429",
+      "parameters": [
         {
-            "startName": "Start testing",
-            "alias": "paidMediaStartDeep",
-            "modelId": "{{YOUR_DEEP_RESEARCH_WORKFLOW_ID_HERE}}",
-            "parameters": [
-                {
-                    "name": "What_do_you_want_to_know",
-                    "displayName": "What_do_you_want_to_know",
-                    "subString": null,
-                    "type": "text",
-                    "visible": true,
-                    "value": null,
-                    "required": true,
-                    "isList": false,
-                    "children": [],
-                    "nullable": false,
-                    "entitySubType": null,
-                    "aliasedName": "start"
-                }
-            ],
-            "version": "1.0.1"
-        },
-        {
-            "startName": "Paid Media Insight & Generation",
-            "alias": "paidMediaStart",
-            "modelId": "{{YOUR_WORKFLOW_ID_HERE}}",
-            "parameters": [
-                {
-                    "name": "What_do_you_want_to_know",
-                    "displayName": "What_do_you_want_to_know",
-                    "subString": null,
-                    "type": "text",
-                    "visible": true,
-                    "value": null,
-                    "required": true,
-                    "isList": false,
-                    "children": [],
-                    "nullable": false,
-                    "entitySubType": null,
-                    "aliasedName": "start"
-                }
-            ],
-            "version": "1.0.1"
+          "name": "What_do_you_want_to_know",
+          "displayName": "What_do_you_want_to_know",
+          "subString": null,
+          "type": "text",
+          "visible": true,
+          "value": null,
+          "required": true,
+          "isList": false,
+          "children": [],
+          "nullable": false,
+          "entitySubType": null,
+          "aliasedName": "start"
         }
-    ],
-    "collectionsMapping": [
-        {
-            "id": "{{YOUR_COLLECTION_ID_HERE}}",
-            "name": "Paid Media Insight & Generation",
-            "alias": "paidsearchapp",
-            "syncEnabled": false
-        }
-    ],
-    "fullpage": true
+      ],
+      "version": "1.0.3"
+    }
+  ],
+  "fileName": "manifest.json"
 }

@@ -124,10 +124,46 @@ const WORKFLOWS = {
     }
 };
 
-const COLLECTION_ALIAS = 'Paid Media Insight & Generation';
+// Debug workflow configuration
+console.log('🎯 Workflow Configuration:');
+Object.keys(WORKFLOWS).forEach(key => {
+    const workflow = WORKFLOWS[key];
+    console.log(`   ${key}:`, {
+        alias: workflow.alias,
+        displayName: workflow.displayName,
+        modelId: workflow.modelId
+    });
+});
+console.log('⚠️  Note: Check that workflow aliases match those deployed in Domo');
+
+const COLLECTION_ALIAS = 'Paid Landing Page Insight & Generation';
 const USER_CHATS_COLLECTION = 'paidSearchUserChats';
 const POLL_MS = 2000;
 const MAX_TRIES = 90;
+
+/*
+ * POLLING BUG FIXES APPLIED:
+ * ========================
+ * 1. Fixed collection name mismatch:
+ *    - Code had: "Paid Media Insight & Generation"
+ *    - Manifest has: "Paid Landing Page Insight & Generation"
+ *
+ * 2. Fixed case-sensitive field name mismatches:
+ *    - instanceId (code) vs InstanceId (actual)
+ *    - promptResult (code) vs Promptresults (actual)
+ *
+ * 3. Added comprehensive debugging for troubleshooting
+ * 4. Added fallback field name checking for robustness
+ */
+
+// Debug collection configuration
+console.log('🔧 Collection Configuration:');
+console.log('   COLLECTION_ALIAS:', COLLECTION_ALIAS);
+console.log('   USER_CHATS_COLLECTION:', USER_CHATS_COLLECTION);
+console.log('   POLL_MS:', POLL_MS);
+console.log('   MAX_TRIES:', MAX_TRIES);
+console.log('⚠️  IMPORTANT: Collection name was corrected to match manifest.json');
+console.log('   (was "Paid Media Insight & Generation", now "Paid Landing Page Insight & Generation")');
 
 // State Management
 const $ = id => {
@@ -147,7 +183,7 @@ let selectedModel = 'clanker5000'; // Default to Clanker 5000
 
 // Session Management Functions
 function generateSessionId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
 function getSessionId() {
@@ -559,14 +595,14 @@ function addMsgToChat(text, role, chatId, save = true, promptContext = null) {
                     </svg>
                 </div>
                 <div class="message-content">
-                    <div class="message-text">${escapeHtml(text)}</div>
+                    <div class="message-text">${escapeHtml(text, true)}</div>
                     <div class="message-time">${formatTime()}</div>
                 </div>
             `;
         } else {
             messageDiv.innerHTML = `
                 <div class="message-content">
-                    <div class="message-text">${escapeHtml(text)}</div>
+                    <div class="message-text">${escapeHtml(text, false)}</div>
                     <div class="message-time">${formatTime()}</div>
                 </div>
             `;
@@ -622,8 +658,8 @@ function addMsg(text, role, save = true) {
     addMsgToChat(text, role, currentChatId, save);
 }
 
-// Escape HTML to prevent XSS while preserving text
-function escapeHtml(text) {
+// Escape HTML to prevent XSS while preserving text, with markdown support for bot messages
+function escapeHtml(text, allowMarkdown = false) {
     const map = {
         '&': '&amp;',
         '<': '&lt;',
@@ -631,7 +667,25 @@ function escapeHtml(text) {
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
+
+    let escaped = text.replace(/[&<>"']/g, m => map[m]);
+
+    // Apply basic markdown formatting for bot messages
+    if (allowMarkdown) {
+        // Bold text: **text** -> <strong>text</strong>
+        escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        // Convert newlines to HTML breaks
+        escaped = escaped.replace(/\n/g, '<br>');
+
+        // Handle bullet points: • text -> styled bullet points
+        escaped = escaped.replace(/^  • (.+)$/gm, '<div style="margin-left: 20px; margin-bottom: 4px;">• $1</div>');
+
+        // Handle emoji at start of lines for section headers
+        escaped = escaped.replace(/^(📊|📋|💰|📅|💱|📈) \*\*(.*?)\*\*$/gm, '<div style="font-size: 16px; font-weight: 600; margin: 12px 0 8px 0; color: #1B8CE3;">$1 $2</div>');
+    }
+
+    return escaped;
 }
 
 // Show/hide typing indicator for specific chat
@@ -762,6 +816,8 @@ async function startFlow(question, chatId) {
             console.log('Format 1 response status:', res.status);
             if (res.ok) {
                 const json = await res.json();
+                console.log('🚀 Workflow started successfully! Response:', json);
+                console.log('🆔 Generated instanceId:', json.id);
                 return json.id;
             }
         } catch (error) {
@@ -779,6 +835,8 @@ async function startFlow(question, chatId) {
             console.log('Format 2 response status:', res.status);
             if (res.ok) {
                 const json = await res.json();
+                console.log('🚀 Workflow started successfully! Response:', json);
+                console.log('🆔 Generated instanceId:', json.id);
                 return json.id;
             }
         } catch (error) {
@@ -796,6 +854,8 @@ async function startFlow(question, chatId) {
             console.log('Format 3 response status:', res.status);
             if (res.ok) {
                 const json = await res.json();
+                console.log('🚀 Workflow started successfully! Response:', json);
+                console.log('🆔 Generated instanceId:', json.id);
                 return json.id;
             }
         } catch (error) {
@@ -815,32 +875,287 @@ async function startFlow(question, chatId) {
 // Fetch all documents from collection
 async function fetchAllDocs() {
     const url = `/domo/datastores/v2/collections/${COLLECTION_ALIAS}/documents/`;
+    console.log('🔍 Fetching documents from collection:', COLLECTION_ALIAS);
+    console.log('📡 Full URL:', url);
+
     const res = await fetch(url, { method: 'GET' });
 
     if (!res.ok) {
+        console.error('❌ Failed to fetch documents - Status:', res.status, res.statusText);
         throw new Error('Failed to fetch documents');
     }
 
-    return await res.json();
+    const docs = await res.json();
+    console.log('📚 Documents fetched successfully - Count:', docs.length);
+
+    // Log structure of first few documents for debugging
+    if (docs.length > 0) {
+        console.log('📄 Sample document structure:');
+        docs.slice(0, 3).forEach((doc, index) => {
+            console.log(`\n   Document ${index + 1}:`);
+            console.log('     ID:', doc.id);
+            console.log('     Has content:', !!doc.content);
+
+            if (doc.content) {
+                console.log('     Content keys:', Object.keys(doc.content));
+
+                // Check both instanceId variations
+                const instanceId = doc.content.instanceId || doc.content.InstanceId;
+                console.log('     InstanceId:', instanceId || 'Missing');
+
+                // Check multiple response field variations
+                const responseField = doc.content.promptResult || doc.content.Promptresults ||
+                                    doc.content.PromptResult || doc.content.promptResults;
+                console.log('     Response field:', responseField ? 'Present' : 'Missing');
+
+                // Log all fields in content for debugging
+                console.log('     Full content structure:');
+                Object.keys(doc.content).forEach(key => {
+                    const value = doc.content[key];
+                    const type = typeof value;
+                    const preview = type === 'string' ? value.substring(0, 50) + '...' : value;
+                    console.log(`       ${key}: [${type}] ${preview}`);
+                });
+            } else {
+                console.log('     Content: null/undefined');
+            }
+        });
+
+        // Log summary of all instanceIds found (check both field variations)
+        const allInstanceIds = docs
+            .map(d => d.content?.instanceId || d.content?.InstanceId)
+            .filter(id => id !== undefined && id !== null);
+
+        console.log('\n🆔 All instanceIds in collection:', allInstanceIds);
+        console.log('📊 Total documents:', docs.length, '| Documents with instanceId:', allInstanceIds.length);
+    } else {
+        console.warn('⚠️ No documents found in collection');
+    }
+
+    return docs;
+}
+
+// Format AI response for better display in chat
+// Converts raw JSON responses into human-readable formatted text with:
+// - Structured sections with emoji headers
+// - Bold labels and proper spacing
+// - Special handling for common data patterns (spending, dates, etc.)
+// - Markdown formatting that gets converted to HTML in chat display
+function formatResponseForDisplay(rawResponse) {
+    if (!rawResponse) return 'No response received.';
+
+    try {
+        // Try to parse as JSON
+        const jsonData = JSON.parse(rawResponse);
+
+        if (typeof jsonData === 'object' && jsonData !== null) {
+            if (Array.isArray(jsonData)) {
+                // Handle JSON arrays
+                return formatJsonArray(jsonData);
+            } else {
+                // Handle JSON objects
+                return formatJsonObject(jsonData);
+            }
+        }
+    } catch (e) {
+        // Not valid JSON, check if it looks like structured data
+        if (rawResponse.includes('{') || rawResponse.includes('[')) {
+            console.log('⚠️ Response looks like JSON but failed to parse:', e.message);
+        }
+    }
+
+    // Return as-is for plain text responses
+    return rawResponse;
+}
+
+// Format JSON object into readable text
+function formatJsonObject(obj) {
+    let formatted = '';
+
+    // Check if this looks like Facebook/social media spending data
+    const facebookSpendKey = Object.keys(obj).find(key =>
+        key.toLowerCase().includes('facebook') && key.toLowerCase().includes('spend')
+    );
+
+    if (facebookSpendKey) {
+        // Handle Facebook spending data
+        const amount = obj[facebookSpendKey];
+        const formattedAmount = obj.formattedAmount || '$' + amount.toLocaleString();
+        formatted += `💰 **Amount Spent**: ${formattedAmount}\n`;
+        formatted += `📅 **Period**: ${obj.month} ${obj.year}\n`;
+        formatted += `💱 **Currency**: ${obj.currency}\n`;
+        if (obj.dataSource) {
+            formatted += `📈 **Data Source**: ${obj.dataSource}\n`;
+        }
+    } else if (obj.totalSpend || obj.googleAdsSpending) {
+        // Handle Google Ads or general spending data
+        Object.keys(obj).forEach(key => {
+            const value = obj[key];
+            const label = formatFieldLabel(key);
+
+            if (typeof value === 'object' && value !== null) {
+                formatted += `**${label}**:\n`;
+                Object.keys(value).forEach(subKey => {
+                    const subLabel = formatFieldLabel(subKey);
+                    formatted += `  • ${subLabel}: ${formatValue(value[subKey])}\n`;
+                });
+                formatted += '\n';
+            } else {
+                formatted += `**${label}**: ${formatValue(value)}\n`;
+            }
+        });
+    } else {
+        // Generic object formatting - no header, just the data
+        Object.keys(obj).forEach(key => {
+            const value = obj[key];
+            const label = formatFieldLabel(key);
+            formatted += `**${label}**: ${formatValue(value)}\n`;
+        });
+    }
+
+    return formatted.trim();
+}
+
+// Format JSON array into readable text
+function formatJsonArray(arr) {
+    if (arr.length === 0) return 'No data available.';
+
+    let formatted = `📋 **Results** (${arr.length} items)\n\n`;
+
+    arr.forEach((item, index) => {
+        formatted += `**${index + 1}.** `;
+        if (typeof item === 'object') {
+            formatted += formatJsonObject(item);
+        } else {
+            formatted += formatValue(item);
+        }
+        formatted += '\n\n';
+    });
+
+    return formatted.trim();
+}
+
+// Convert camelCase/snake_case field names to readable labels
+function formatFieldLabel(fieldName) {
+    return fieldName
+        .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+        .replace(/_/g, ' ') // Replace underscores with spaces
+        .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize first letter of each word
+        .trim();
+}
+
+// Format individual values with appropriate formatting
+function formatValue(value) {
+    if (value === null || value === undefined) return 'N/A';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'number') {
+        // Format large numbers with commas
+        if (value > 1000) {
+            return value.toLocaleString();
+        }
+        return value.toString();
+    }
+    if (typeof value === 'string') {
+        // If it looks like a currency amount, return as-is
+        if (value.match(/^\$[\d,]+\.?\d*$/)) return value;
+        // If it looks like a date, try to format it nicely
+        if (value.match(/^\d{4}-\d{2}-\d{2}/)) {
+            try {
+                return new Date(value).toLocaleDateString();
+            } catch (e) {
+                return value;
+            }
+        }
+        return value;
+    }
+    return JSON.stringify(value);
 }
 
 // Poll for result - now accepts target chat ID
+// FIXED: Handles case-sensitive field names from Domo collection:
+//   - instanceId vs InstanceId (capital I)
+//   - promptResult vs Promptresults (with 's')
 async function pollForResult(instanceId, targetChatId) {
+    console.log('🔄 Starting polling for instanceId:', instanceId);
+    console.log('📊 Polling settings - MAX_TRIES:', MAX_TRIES, 'POLL_MS:', POLL_MS);
+
     for (let i = 0; i < MAX_TRIES; i++) {
+        console.log(`📡 Polling attempt ${i + 1}/${MAX_TRIES} for instanceId: ${instanceId}`);
+
         const docs = await fetchAllDocs();
-        const hit = docs.find(d => d.content?.instanceId === instanceId);
+
+        // Log all instanceIds found in documents (check multiple field name variations)
+        const foundInstanceIds = docs
+            .filter(d => d.content?.instanceId || d.content?.InstanceId)
+            .map(d => d.content.instanceId || d.content.InstanceId);
+
+        if (foundInstanceIds.length > 0) {
+            console.log('🆔 Found instanceIds in collection:', foundInstanceIds);
+            console.log('🎯 Looking for instanceId:', instanceId);
+            console.log('✅ Exact match exists:', foundInstanceIds.includes(instanceId));
+        } else {
+            console.log('⚠️ No documents with instanceId found in collection');
+        }
+
+        // Try multiple field name variations for instanceId
+        const hit = docs.find(d =>
+            d.content?.instanceId === instanceId ||
+            d.content?.InstanceId === instanceId
+        );
 
         if (hit) {
-            return hit.content.promptResult;
+            console.log('🎉 Found matching document!');
+            console.log('📋 Document structure:', {
+                id: hit.id,
+                contentKeys: Object.keys(hit.content || {}),
+                hasPromptResult: !!hit.content?.promptResult,
+                promptResultType: typeof hit.content?.promptResult,
+                promptResultLength: hit.content?.promptResult?.length || 'N/A'
+            });
+
+            // Check for response in multiple possible field names
+            const responseFields = [
+                'promptResult',      // Original expected field
+                'Promptresults',     // Actual field from your example
+                'PromptResult',      // Variation with capital P
+                'promptResults',     // Variation with capital R
+                'result',
+                'response',
+                'output',
+                'answer',
+                'text'
+            ];
+
+            let responseContent = null;
+            let foundField = null;
+
+            for (const field of responseFields) {
+                if (hit.content?.[field]) {
+                    responseContent = hit.content[field];
+                    foundField = field;
+                    break;
+                }
+            }
+
+            if (responseContent) {
+                console.log(`✅ Found response in field '${foundField}'`);
+                console.log('📝 Response preview:', responseContent.substring(0, 100) + '...');
+                return responseContent;
+            } else {
+                console.error('❌ Document found but no response field found!');
+                console.log('📝 Available content fields:', Object.keys(hit.content || {}));
+                console.log('🔍 Searched for fields:', responseFields);
+            }
         }
 
         if (currentChatId === targetChatId && i % 5 === 0) {
-            console.log(`Still waiting for response... (${i * POLL_MS / 1000}s)`);
+            console.log(`⏳ Still waiting for response... (${i * POLL_MS / 1000}s elapsed)`);
         }
 
         await new Promise(resolve => setTimeout(resolve, POLL_MS));
     }
 
+    console.error('⏰ Polling timed out after', MAX_TRIES, 'attempts');
     throw new Error('Request timed out. Please try again.');
 }
 
@@ -875,27 +1190,38 @@ async function sendMsg() {
     };
 
     try {
+        console.log('🚀 Starting workflow for message:', text.substring(0, 50) + '...');
         const instanceId = await startFlow(text, messageChatId);
-        console.log('Workflow started with ID:', instanceId, 'for chat:', messageChatId);
+        console.log('✅ Workflow started successfully!');
+        console.log('   🆔 InstanceId:', instanceId);
+        console.log('   💬 Chat ID:', messageChatId);
+        console.log('   📝 Message length:', text.length);
 
-        const answer = await pollForResult(instanceId, messageChatId);
-        console.log('Received answer for chat:', messageChatId, 'Answer:', answer);
+        console.log('⏳ Starting polling for workflow response...');
+        const rawAnswer = await pollForResult(instanceId, messageChatId);
+        console.log('🎉 Successfully received response!');
+        console.log('   📝 Response length:', rawAnswer?.length || 0);
+        console.log('   📄 Response preview:', rawAnswer?.substring(0, 100) + '...' || 'No content');
+
+        // Format the response for better display
+        const formattedAnswer = formatResponseForDisplay(rawAnswer);
+        console.log('✨ Formatted response for display');
 
         hideTypingForChat(messageChatId);
 
         const responseData = {
             ...promptData,
-            response: answer,
+            response: rawAnswer, // Store raw response for data purposes
             responseTime: new Date().toISOString(),
             workflowInstanceId: instanceId
         };
 
-        addMsgToChat(answer, 'bot', messageChatId, true, responseData);
+        addMsgToChat(formattedAnswer, 'bot', messageChatId, true, responseData);
 
         logSessionActivity('message_sent', {
             chatId: messageChatId,
             messageLength: text.length,
-            responseLength: answer.length
+            responseLength: rawAnswer.length
         });
 
     } catch (err) {
